@@ -1,112 +1,50 @@
-'use strict';
+import "./popup.css"
 
-import './popup.css';
+const deleteVocab = (event) => {
+    const id = event.target.id;
+    const lineNum = id[4];
 
-(function() {
-  // We will make use of Storage API to get and store `count` value
-  // More information on Storage API can we found at
-  // https://developer.chrome.com/extensions/storage
+    const targetTerm = document.getElementById('term' + lineNum).innerHTML;
+    let vocabArr = JSON.parse(localStorage.getItem("vocabList"));
+    vocabArr.splice(vocabArr.indexOf(targetTerm), 1);
+    localStorage.setItem("vocabList", JSON.stringify(vocabArr));
 
-  // To get storage access, we have to mention it in `permissions` property of manifest.json file
-  // More information on Permissions can we found at
-  // https://developer.chrome.com/extensions/declare_permissions
-  const counterStorage = {
-    get: cb => {
-      chrome.storage.sync.get(['count'], result => {
-        cb(result.count);
-      });
-    },
-    set: (value, cb) => {
-      chrome.storage.sync.set(
-        {
-          count: value,
-        },
-        () => {
-          cb();
-        }
-      );
-    },
-  };
+    const targetLine = document.getElementById('line' + lineNum);
+    targetLine.remove();
+};
 
-  function setupCounter(initialValue = 0) {
-    document.getElementById('counter').innerHTML = initialValue;
+if (localStorage.getItem("vocabList") !== null) {
+    let vocab = document.getElementById('saved-vocab');
 
-    document.getElementById('incrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'INCREMENT',
-      });
+    let vocabArr = JSON.parse(localStorage.getItem("vocabList")).reverse();
+    // let vocabArr = JSON.parse(localStorage.getItem("vocabList"));
+    vocabArr.forEach(function (item, i) {
+        // div element for each line
+        let line = document.createElement('div');
+        line.setAttribute("class", "line");
+        line.setAttribute("id", "line" + (i + 1));
+
+        // p for vocab term
+        let pElement = document.createElement('p');
+        pElement.setAttribute("id", "term" + (i + 1));
+        pElement.innerHTML = item;
+
+        // img for delete icon
+        let icon = document.createElement('img');
+        icon.setAttribute("id", "icon" + (i + 1));
+        icon.setAttribute("src", "icons/delete.png");
+        icon.setAttribute("width", "30px");
+        icon.setAttribute("height", "30px");
+        icon.addEventListener('click', deleteVocab, false);
+
+        line.appendChild(pElement);
+        line.appendChild(icon);
+
+        vocab.appendChild(line);
+
     });
+}
 
-    document.getElementById('decrementBtn').addEventListener('click', () => {
-      updateCounter({
-        type: 'DECREMENT',
-      });
-    });
-  }
 
-  function updateCounter({ type }) {
-    counterStorage.get(count => {
-      let newCount;
 
-      if (type === 'INCREMENT') {
-        newCount = count + 1;
-      } else if (type === 'DECREMENT') {
-        newCount = count - 1;
-      } else {
-        newCount = count;
-      }
 
-      counterStorage.set(newCount, () => {
-        document.getElementById('counter').innerHTML = newCount;
-
-        // Communicate with content script of
-        // active tab by sending a message
-        chrome.tabs.query({ active: true, currentWindow: true }, tabs => {
-          const tab = tabs[0];
-
-          chrome.tabs.sendMessage(
-            tab.id,
-            {
-              type: 'COUNT',
-              payload: {
-                count: newCount,
-              },
-            },
-            response => {
-              console.log('Current count value passed to contentScript file');
-            }
-          );
-        });
-      });
-    });
-  }
-
-  function restoreCounter() {
-    // Restore count value
-    counterStorage.get(count => {
-      if (typeof count === 'undefined') {
-        // Set counter value as 0
-        counterStorage.set(0, () => {
-          setupCounter(0);
-        });
-      } else {
-        setupCounter(count);
-      }
-    });
-  }
-
-  document.addEventListener('DOMContentLoaded', restoreCounter);
-
-  // Communicate with background file by sending a message
-  chrome.runtime.sendMessage(
-    {
-      type: 'GREETINGS',
-      payload: {
-        message: 'Hello, my name is Pop. I am from Popup.',
-      },
-    },
-    response => {
-      console.log(response.message);
-    }
-  );
-})();

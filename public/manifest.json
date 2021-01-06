@@ -1,36 +1,36 @@
 {
   "manifest_version": 2,
-  "name": "Test",
-  "version": "0.1.0",
-  "description": "My Chrome Extension",
+  "name": "QuickDict",
+  "version": "1.0.0",
+  "description": "QuickDict is an extension that helps to accelerate looking up Japanese vocabulary",
   "icons": {
     "16": "icons/icon_16.png",
     "32": "icons/icon_32.png",
-    "48": "icons/icon_48.png",
+    "64": "icons/icon_64.png",
     "128": "icons/icon_128.png"
   },
+
   "background": {
     "scripts": [
       "background.js"
     ],
     "persistent": false
   },
+
   "browser_action": {
-    "default_title": "Test",
-    "default_popup": "popup.html"
-  },
-  "permissions": [
-    "storage"
-  ],
-  "content_scripts": [
-    {
-      "matches": [
-        "<all_urls>"
-      ],
-      "run_at": "document_idle",
-      "js": [
-        "contentScript.js"
-      ]
+    "default_title": "QuickDict Popup",
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon_16.png",
+      "32": "icons/icon_32.png",
+      "64": "icons/icon_64.png",
+      "128": "icons/icon_128.png"
     }
-  ]
+  },
+
+  "permissions": ["declarativeContent","contextMenus",
+    "https://jisho.org/*",
+    "https://dictionary.goo.ne.jp/*",
+    "http://takoboto.jp/*",
+    "https://www.deepl.com/*"]
 }
